@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles  # <- importante
 from pptx import Presentation
 from docx import Document
 import uuid
@@ -8,56 +9,43 @@ import os
 
 app = FastAPI()
 
-# Permitir CORS para tu HTML
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Puedes cambiar a ["http://localhost:5500"] si quieres restringir
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Carpetas
 UPLOAD_DIR = "uploads"
-OUTPUT_DIR = "output"
-
+OUTPUT_DIR = "outputs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# Montar la carpeta frontend como estática
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
+# Funciones de conversión
 def clean_text(text: str) -> str:
-    """
-    Limpia saltos de línea y espacios extra.
-    """
     return ' '.join(text.split()).strip()
 
-
 def pptx_to_docx_clean(pptx_path: str, docx_path: str):
-    """
-    Convierte un PPTX a DOCX limpio:
-    - Cada diapositiva con un título "Diapositiva X"
-    - Párrafos limpios
-    - Mantiene estructura básica de viñetas
-    """
     presentation = Presentation(pptx_path)
     document = Document()
-
     for slide_index, slide in enumerate(presentation.slides, start=1):
         document.add_heading(f"Diapositiva {slide_index}", level=1)
-
         for shape in slide.shapes:
             if shape.has_text_frame:
-                # Itera párrafo por párrafo
                 for para in shape.text_frame.paragraphs:
                     text = clean_text(para.text)
-                    if text:  # Ignora párrafos vacíos
+                    if text:
                         document.add_paragraph(text)
-
-        # Línea separadora entre diapositivas
-        document.add_paragraph("\n" + "-" * 40 + "\n")
-
+        document.add_paragraph("\n" + "-"*40 + "\n")
     document.save(docx_path)
 
-
+# Endpoint POST /convert
 @app.post("/convert")
 async def convert_ppt_to_word(file: UploadFile = File(...)):
     if not file.filename.endswith((".pptx", ".ppt")):
