@@ -1,0 +1,13 @@
+# Entorno virtual
+venv/
+
+# Archivos temporales de Python
+__pycache__/
+*.pyc
+
+# Carpeta temporal de uploads y outputs
+uploads/
+outputs/
+
+# Archivos de sistema (opcional)
+.DS_Store
