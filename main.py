@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles  # <- importante
+from fastapi.staticfiles import StaticFiles
 from pptx import Presentation
 from docx import Document
 import uuid
@@ -25,6 +25,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Montar la carpeta frontend como estática
+# index.html será servido al acceder a /
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 # Funciones de conversión
