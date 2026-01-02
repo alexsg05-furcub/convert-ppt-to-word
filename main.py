@@ -9,7 +9,7 @@ import os
 
 app = FastAPI()
 
-# CORS
+# CORS (permite cualquier frontend por ahora)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,9 +24,15 @@ OUTPUT_DIR = "outputs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Montar la carpeta frontend como estática
-# index.html será servido al acceder a /
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+# Montar la carpeta frontend en /frontend estático
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
+
+# Servir index.html en la raíz
+from fastapi.responses import HTMLResponse
+@app.get("/", response_class=HTMLResponse)
+def serve_index():
+    with open("frontend/index.html", "r", encoding="utf-8") as f:
+        return f.read()
 
 # Funciones de conversión
 def clean_text(text: str) -> str:

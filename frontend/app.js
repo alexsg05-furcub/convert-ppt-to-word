@@ -13,10 +13,11 @@ document.getElementById("convertBtn").addEventListener("click", async () => {
   status.textContent = "Convirtiendo...";
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/convert", {
-      method: "POST",
-      body: formData
-    });
+  const response = await fetch("/convert", { 
+  method: "POST",
+  body: formData
+});
+;
 
     if (!response.ok) {
       status.textContent = "Error en la conversión";
